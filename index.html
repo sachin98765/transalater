@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f8f9fa;
+            color: black;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output-box {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            
+           
+        }
+        .output {
+            width: 48%;
+            padding: 10px;
+            border-radius: 5px;
+            background: #c1c2c4;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 50px;
+            width: fit-content;
+        }
+        .label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>English to Hindi & Bengali Translator</h2>
+        <input type="text" id="inputText" placeholder="Enter text in English..." onkeyup="suggestWords()">
+        <div class="suggestions" id="wordSuggestions"></div>
+        <button onclick="translateText()">Translate</button>
+        <div class="output-box">
+            <div>
+                <div class="label">Hindi</div>
+                <div class="output" id="outputHindi" style="width: 80%;"></div>
+            </div>
+            <div>
+                <div class="label">Bengali</div>
+                <div class="output" id="outputBengali" style="width: 80%;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function translateText() {
+            let text = document.getElementById("inputText").value;
+            if (text.trim() === "") {
+                alert("Please enter text to translate");
+                return;
+            }
+            
+            let hindiUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=hi&dt=t&q=${encodeURIComponent(text)}`;
+            let bengaliUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=bn&dt=t&q=${encodeURIComponent(text)}`;
+            
+            try {
+                let [hindiResponse, bengaliResponse] = await Promise.all([
+                    fetch(hindiUrl),
+                    fetch(bengaliUrl)
+                ]);
+                
+                let hindiResult = await hindiResponse.json();
+                let bengaliResult = await bengaliResponse.json();
+                
+                let hindiTranslations = hindiResult[0].map(item => item[0]).join(", ");
+                let bengaliTranslations = bengaliResult[0].map(item => item[0]).join(", ");
+                
+                document.getElementById("outputHindi").innerText = hindiTranslations;
+                document.getElementById("outputBengali").innerText = bengaliTranslations;
+            } catch (error) {
+                document.getElementById("outputHindi").innerText = "Translation failed!";
+                document.getElementById("outputBengali").innerText = "Translation failed!";
+            }
+        }
+
+        function suggestWords() {
+            let text = document.getElementById("inputText").value;
+            if (text.length < 2) {
+                document.getElementById("wordSuggestions").innerText = "";
+                return;
+            }
+            
+            let suggestions = ["hello", "world", "translate", "language", "beautiful", "happy", "morning", "night"];
+            let matched = suggestions.filter(word => word.startsWith(text.toLowerCase()));
+            document.getElementById("wordSuggestions").innerText = matched.length ? "Suggestions: " + matched.join(", ") : "";
+        }
+    </script>
+</body>
+</html>
